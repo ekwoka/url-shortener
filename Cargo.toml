@@ -1,0 +1,29 @@
+[package]
+name = "url-shortener"
+version = "0.0.1"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+futures = "0.3.28"
+hyper = { version = "0.14.26", features = ["full"] }
+reqwest = { version = "0.11.17", features = ["json"] }
+tokio = { version= "1.28.0", features = ["full"] }
+warp = "0.3.5"
+
+
+[profile.release]
+codegen-units = 1 # Compile crates one after another so the compiler can optimize better
+lto = true # Enables link to optimizations
+opt-level = 3 # Optimize for binary size
+strip = true  # Automatically strip symbols from the binary.
+
+# Enable a small amount of optimization in debug mode
+[profile.dev]
+opt-level = 1
+incremental = true
+
+# Enable high optimizations for dependencies (incl. Bevy), but not for our code:
+[profile.dev.package."*"]
+opt-level = 3
