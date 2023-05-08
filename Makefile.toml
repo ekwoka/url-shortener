@@ -1,13 +1,5 @@
-[tasks.clippy]
-command = "cargo"
-args = ["watch","-x","clippy"]
-
-[tasks.fmt]
-command = "cargo"
-args = ["watch","-x","fmt"]
-
 [tasks.dev]
-script = "cargo watch -x run"
+script = "cargo watch -x clippy -x fmt -x run"
 
 [tasks.image]
 script = "cpln image build --name ${CARGO_MAKE_CRATE_NAME}:${CARGO_MAKE_CRATE_VERSION} -- --builder paketobuildpacks/builder-jammy-buildpackless-full:latest --buildpack paketo-community/rust@0.32.0 --run-image paketobuildpacks/run-jammy-base:latest"
@@ -36,3 +28,6 @@ script = "docker run --name surrealdb --rm --pull always -p 8000:8000 surrealdb/
 
 [tasks.db-down]
 script = "docker rm -f surrealdb"
+
+[tasks.cpln-create]
+script = "cpln workload create --name url-shortener-preview --image //image/url-shortener:0.0.1 --port 8080 --public --gvc url-shorten --org thekwoka --type standard --cpu 2m --mem 10Mi"
