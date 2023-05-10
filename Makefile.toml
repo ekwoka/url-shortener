@@ -1,5 +1,8 @@
 [tasks.dev]
-script = "cargo watch -x clippy -x fmt -x run"
+script = "cargo watch -x clippy -x fmt -x test -x run"
+
+[tasks.testing]
+script = "cargo fmt"
 
 [tasks.image]
 script = "cpln image build --name ${CARGO_MAKE_CRATE_NAME}:${CARGO_MAKE_CRATE_VERSION} -- --builder paketobuildpacks/builder-jammy-buildpackless-full:latest --buildpack paketo-community/rust@0.32.0 --run-image paketobuildpacks/run-jammy-base:latest"
