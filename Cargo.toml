@@ -1,16 +1,23 @@
 [package]
-name = "url-shortener"
+name = "url_shortener"
 version = "0.0.1"
 edition = "2021"
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+path = "src/main.rs"
+name = "url_shortener"
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-futures = "0.3.28"
-hyper = { version = "0.14.26", features = ["full"] }
-reqwest = { version = "0.11.17", features = ["json"] }
-tokio = { version= "1.28.0", features = ["full"] }
-warp = "0.3.5"
+serde = "1.0.162"
+surrealdb = { git = "https://github.com/surrealdb/surrealdb.git", tag = "v1.0.0-beta.9" }
+tokio = { version = "1.28.1", features = ["time", "macros", "tokio-macros"] }
+warp = { version ="0.3.5", default-features = false, features = ["tokio-rustls", "websocket"] }
 
 
 [profile.release]
@@ -27,3 +34,6 @@ incremental = true
 # Enable high optimizations for dependencies (incl. Bevy), but not for our code:
 [profile.dev.package."*"]
 opt-level = 3
+
+# 1m19s - 1.01s - 0.09s
+# 1m21s
