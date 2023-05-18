@@ -14,7 +14,7 @@ name = "url_shortener"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde = "1.0.162"
+serde = "1.0.163"
 surrealdb = { git = "https://github.com/surrealdb/surrealdb.git", tag = "v1.0.0-beta.9" }
 tokio = { version = "1.28.1", features = ["time", "macros", "tokio-macros"] }
 warp = { version ="0.3.5", default-features = false, features = ["tokio-rustls", "websocket"] }
@@ -24,16 +24,11 @@ warp = { version ="0.3.5", default-features = false, features = ["tokio-rustls",
 codegen-units = 1 # Compile crates one after another so the compiler can optimize better
 lto = true # Enables link to optimizations
 opt-level = 3 # Optimize for binary size
-strip = true  # Automatically strip symbols from the binary.
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]
-opt-level = 1
+opt-level = 0
 incremental = true
 
-# Enable high optimizations for dependencies (incl. Bevy), but not for our code:
 [profile.dev.package."*"]
-opt-level = 3
-
-# 1m19s - 1.01s - 0.09s
-# 1m21s
+opt-level = 0

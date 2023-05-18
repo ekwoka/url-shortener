@@ -1,15 +1,24 @@
 [tasks.dev]
 script = "cargo watch -x clippy -x fmt -x test -x run"
 
-[tasks.testing]
+[tasks.fmt]
 script = "cargo fmt"
 
+[tasks.builder]
+script = "cargo build --release"
+dependencies = ["clippy", "fmt", "test"]
+
+[tasks.builder-linux]
+script = "TARGET_CC=x86_64-unknown-linux-gnu-gcc cargo build --release --target x86_64-unknown-linux-gnu"
+dependencies = ["clippy", "fmt", "test"]
+
 [tasks.image]
-script = "cpln image build --name ${CARGO_MAKE_CRATE_NAME}:${CARGO_MAKE_CRATE_VERSION} -- --builder paketobuildpacks/builder-jammy-buildpackless-full:latest --buildpack paketo-community/rust@0.32.0 --run-image paketobuildpacks/run-jammy-base:latest"
+script = "cpln image build --name ${CARGO_MAKE_CRATE_NAME}:${CARGO_MAKE_CRATE_VERSION}"
+dependencies = ["builder-linux"]
 
 [tasks.up]
 script = "docker run --name ${CARGO_MAKE_CRATE_NAME} -p 8080:8080 thekwoka.registry.cpln.io/${CARGO_MAKE_CRATE_NAME}:${CARGO_MAKE_CRATE_VERSION}"
-dependencies = ["image"]
+dependencies = ["down","image"]
 
 [tasks.down]
 script = "docker rm -f ${CARGO_MAKE_CRATE_NAME}"
@@ -21,7 +30,8 @@ script = "docker start ${CARGO_MAKE_CRATE_NAME}"
 script = "docker stop ${CARGO_MAKE_CRATE_NAME}"
 
 [tasks.push]
-script = "cpln image build --name ${CARGO_MAKE_CRATE_NAME}:${CARGO_MAKE_CRATE_VERSION} --push -- --builder paketobuildpacks/builder-jammy-buildpackless-full:latest --buildpack paketo-community/rust@0.32.0 --run-image paketobuildpacks/run-jammy-base:latest"
+script = "cpln image build --name ${CARGO_MAKE_CRATE_NAME}:${CARGO_MAKE_CRATE_VERSION} --push"
+dependencies = ["builder"]
 
 [tasks.deploy]
 script = "cpln image build --name ${CARGO_MAKE_CRATE_NAME}:latest --push -- --builder paketobuildpacks/builder-jammy-buildpackless-full:latest --buildpack paketo-community/rust@0.32.0 --run-image paketobuildpacks/run-jammy-base:latest"
