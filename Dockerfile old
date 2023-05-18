@@ -1,0 +1,35 @@
+FROM debian:buster-slim AS chef
+CMD ["bash"]
+ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse
+RUN apt-get update;
+RUN apt-get install -y --no-install-recommends ca-certificates curl gnupg netbase wget lld clang autoconf automake bzip2 dpkg-dev file g++ gcc imagemagick libbz2-dev libc6-dev libcurl4-openssl-dev libdb-dev libevent-dev libffi-dev libgdbm-dev libglib2.0-dev libgmp-dev libjpeg-dev libkrb5-dev liblzma-dev libmagickcore-dev libmagickwand-dev libmaxminddb-dev libncurses5-dev libncursesw5-dev libpng-dev libpq-dev libreadline-dev libsqlite3-dev libssl-dev libtool libwebp-dev libxml2-dev libxslt-dev libyaml-dev make patch unzip xz-utils zlib1g-dev mercurial openssh-client subversion procps;
+RUN rm -rf /var/lib/apt/lists/*
+ENV RUSTUP_HOME=/usr/local/rustup CARGO_HOME=/usr/local/cargo PATH=/usr/local/cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV url="https://static.rust-lang.org/rustup/archive/1.25.2/x86_64-unknown-linux-gnu/rustup-init"
+RUN wget "$url";
+RUN chmod +x rustup-init;
+RUN ./rustup-init -y --no-modify-path --profile minimal --default-toolchain stable;
+RUN rm rustup-init;
+RUN chmod -R a+w $RUSTUP_HOME $CARGO_HOME;
+RUN cargo install cargo-chef --locked
+RUN rm -rf $CARGO_HOME/registry/
+WORKDIR /app
+
+FROM chef AS planner
+COPY . .
+RUN cargo chef prepare --recipe-path recipe.json
+
+FROM chef AS builder
+COPY --from=planner /app/recipe.json recipe.json
+# Build dependencies - this is the caching Docker layer!
+RUN cargo chef cook --release --recipe-path recipe.json --bin url_shortener
+# Build application
+COPY . .
+RUN cargo build --release --bin url_shortener
+RUN strip /app/target/release/url_shortener
+
+# We do not need the Rust toolchain to run the binary!
+FROM debian:buster-slim AS runtime
+WORKDIR /app
+COPY --from=builder /app/target/release/url_shortener /usr/local/bin
+ENTRYPOINT ["/usr/local/bin/url_shortener"]

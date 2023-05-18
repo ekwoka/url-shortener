@@ -8,9 +8,13 @@ script = "cargo fmt"
 script = "cargo build --release"
 dependencies = ["clippy", "fmt", "test"]
 
+[tasks.builder-linux]
+script = "TARGET_CC=x86_64-unknown-linux-gnu-gcc cargo build --release --target x86_64-unknown-linux-gnu"
+dependencies = ["clippy", "fmt", "test"]
+
 [tasks.image]
 script = "cpln image build --name ${CARGO_MAKE_CRATE_NAME}:${CARGO_MAKE_CRATE_VERSION}"
-dependencies = ["builder"]
+dependencies = ["builder-linux"]
 
 [tasks.up]
 script = "docker run --name ${CARGO_MAKE_CRATE_NAME} -p 8080:8080 thekwoka.registry.cpln.io/${CARGO_MAKE_CRATE_NAME}:${CARGO_MAKE_CRATE_VERSION}"
