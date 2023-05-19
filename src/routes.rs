@@ -1,8 +1,27 @@
 use std::convert::Infallible;
 
+use surrealdb::sql::Thing;
 use warp::{filters, http::Response, path::FullPath, Filter};
 
 use crate::{Record, Redirect};
+
+struct Id(Thing);
+
+impl TryFrom<String> for Id {
+    type Error = String;
+    fn try_from(id: String) -> Result<Self, Self::Error> {
+        match id.split_once(':') {
+            Some((tb, id)) => Ok(Self(Thing::from((tb.to_string(), id.to_string())))),
+            None => Err("Invalid ID".into()),
+        }
+    }
+}
+
+impl From<Id> for Thing {
+    fn from(val: Id) -> Self {
+        val.0
+    }
+}
 
 fn with_full() -> filters::BoxedFilter<(FullPath,)> {
     warp::any().and(warp::path::full()).boxed()
@@ -10,10 +29,11 @@ fn with_full() -> filters::BoxedFilter<(FullPath,)> {
 
 pub fn make_shortener(db: crate::Db) -> filters::BoxedFilter<(String,)> {
     async fn make_url(url: warp::path::FullPath, db: crate::Db) -> Result<String, Infallible> {
+        println!("url: {:?}", url);
         let created: surrealdb::Result<Record> = db
             .create("redirect")
             .content(Redirect {
-                url: url.as_str().to_string(),
+                url: url.as_str().replace("/create/", "").to_string(),
             })
             .await;
         match created {
@@ -22,7 +42,7 @@ pub fn make_shortener(db: crate::Db) -> filters::BoxedFilter<(String,)> {
         }
     }
 
-    warp::path!("create")
+    warp::path("create")
         .and(with_full())
         .and(warp::any().map(move || db.clone()))
         .and_then(make_url)
@@ -33,16 +53,30 @@ pub fn get_redirect(db: crate::Db) -> filters::BoxedFilter<(Response<String>,)> 
     fn with_db(db: crate::Db) -> filters::BoxedFilter<(crate::Db,)> {
         warp::any().map(move || db.clone()).boxed()
     }
-    async fn get_url(id: String, _db: crate::Db) -> Result<Response<String>, Infallible> {
-        let Ok(_id) = &id.parse::<i32>() else {
+    async fn get_url(id: String, db: crate::Db) -> Result<Response<String>, Infallible> {
+        /* let Ok(_id) = &id.parse::<i32>() else {
             return Ok(Response::builder()
                 .status(200)
                 .body("Invalid URL - Needs to be Number".to_string()).unwrap());
+        }; */
+        let id: Id = match Id::try_from(id) {
+            Ok(id) => id,
+            Err(e) => {
+                return Ok(Response::builder()
+                    .status(200)
+                    .body(format!("Error: {}", e))
+                    .unwrap())
+            }
         };
-        Ok(Response::builder()
-            .status(200)
-            .body("Invalid URL - Not Registered Yet".to_string())
-            .unwrap())
+        let redirect: Result<Redirect, surrealdb::Error> = db.select(Into::<Thing>::into(id)).await;
+
+        match redirect {
+            Ok(redirect) => Ok(Response::builder().status(200).body(redirect.url).unwrap()),
+            Err(e) => Ok(Response::builder()
+                .status(200)
+                .body(format!("Error: {}", e))
+                .unwrap()),
+        }
     }
 
     warp::path!(String)

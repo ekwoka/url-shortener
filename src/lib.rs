@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use surrealdb::engine::remote::ws::{Client, Ws};
+use surrealdb::opt::auth::Root;
 use surrealdb::sql::Thing;
 use surrealdb::Surreal;
 use warp::Filter;
@@ -22,6 +23,14 @@ struct Record {
 
 pub async fn run() -> surrealdb::Result<()> {
     let db = Surreal::new::<Ws>("127.0.0.1:8000").await?;
+
+    db.signin(Root {
+        username: "root",
+        password: "root",
+    })
+    .await?;
+
+    db.use_ns("test").use_db("test").await?;
 
     let shortener = make_shortener(db.clone()).or(get_redirect(db));
 

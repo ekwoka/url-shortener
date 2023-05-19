@@ -37,7 +37,7 @@ dependencies = ["builder"]
 script = "cpln image build --name ${CARGO_MAKE_CRATE_NAME}:latest --push -- --builder paketobuildpacks/builder-jammy-buildpackless-full:latest --buildpack paketo-community/rust@0.32.0 --run-image paketobuildpacks/run-jammy-base:latest"
 
 [tasks.db-up]
-script = "docker run --name surrealdb --rm --pull always -p 8000:8000 surrealdb/surrealdb:latest start"
+script = "docker run --name surrealdb --rm --pull always -p 8000:8000 surrealdb/surrealdb:latest start --user root --pass root"
 
 [tasks.db-down]
 script = "docker rm -f surrealdb"
