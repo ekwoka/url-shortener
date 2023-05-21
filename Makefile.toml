@@ -1,4 +1,7 @@
 [tasks.dev]
+script = "cargo watch -x clippy -x fmt -x test"
+
+[tasks.dev-run]
 script = "cargo watch -x clippy -x fmt -x test -x run"
 
 [tasks.fmt]

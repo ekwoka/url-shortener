@@ -27,3 +27,9 @@ pub fn get_configuration() -> Result<Configuration, config::ConfigError> {
         .build()?;
     settings.try_deserialize::<Configuration>()
 }
+
+impl DatabaseSettings {
+    pub fn connection_string(&self) -> String {
+        format!("{}:{}", self.host, self.port)
+    }
+}

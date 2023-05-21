@@ -84,3 +84,15 @@ pub fn get_redirect(db: crate::Db) -> filters::BoxedFilter<(Response<String>,)> 
         .and_then(get_url)
         .boxed()
 }
+
+pub fn health_check() -> filters::BoxedFilter<(Response<String>,)> {
+    warp::path!("health_check")
+        .and(warp::get())
+        .map(|| {
+            Response::builder()
+                .status(200)
+                .body("OK".to_string())
+                .unwrap()
+        })
+        .boxed()
+}
