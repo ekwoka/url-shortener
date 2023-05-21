@@ -5,19 +5,26 @@ script = "cargo watch -x clippy -x fmt -x test -x run"
 script = "cargo fmt"
 
 [tasks.builder]
+condition = { files_modified = { input = ["${CARGO_MAKE_WORKING_DIRECTORY}/Cargo.toml", "./src/**/*.rs"], output = ["./target/release/url_shortener"] } }
 script = "cargo build --release"
 dependencies = ["clippy", "fmt", "test"]
 
 [tasks.builder-linux]
+condition = { files_modified = { input = ["${CARGO_MAKE_WORKING_DIRECTORY}/Cargo.toml", "./src/**/*.rs"], output = ["./target/x86_64-unknown-linux-gnu/release/url_shortener"] } }
 script = "TARGET_CC=x86_64-unknown-linux-gnu-gcc cargo build --release --target x86_64-unknown-linux-gnu"
-dependencies = ["clippy", "fmt", "test"]
+dependencies = ["builder"]
+
+[tasks.builder-musl]
+condition = { files_modified = { input = ["${CARGO_MAKE_WORKING_DIRECTORY}/Cargo.toml", "./src/**/*.rs"], output = ["./target/x86_64-unknown-linux-musl/release/url_shortener"] } }
+script = "TARGET_CC=x86_64-linux-musl-gcc cargo build --release --target x86_64-unknown-linux-musl"
+dependencies = ["builder"]
 
 [tasks.image]
 script = "cpln image build --name ${CARGO_MAKE_CRATE_NAME}:${CARGO_MAKE_CRATE_VERSION}"
-dependencies = ["builder-linux"]
+dependencies = ["builder-musl"]
 
 [tasks.up]
-script = "docker run --name ${CARGO_MAKE_CRATE_NAME} -p 8080:8080 thekwoka.registry.cpln.io/${CARGO_MAKE_CRATE_NAME}:${CARGO_MAKE_CRATE_VERSION}"
+script = "docker run --name ${CARGO_MAKE_CRATE_NAME} -p 8080:8080 thekwoka.registry.cpln.io/${CARGO_MAKE_CRATE_NAME}:${CARGO_MAKE_CRATE_VERSION}-musl"
 dependencies = ["down","image"]
 
 [tasks.down]
@@ -31,10 +38,11 @@ script = "docker stop ${CARGO_MAKE_CRATE_NAME}"
 
 [tasks.push]
 script = "cpln image build --name ${CARGO_MAKE_CRATE_NAME}:${CARGO_MAKE_CRATE_VERSION} --push"
-dependencies = ["builder"]
+dependencies = ["builder-musl"]
 
 [tasks.deploy]
-script = "cpln image build --name ${CARGO_MAKE_CRATE_NAME}:latest --push -- --builder paketobuildpacks/builder-jammy-buildpackless-full:latest --buildpack paketo-community/rust@0.32.0 --run-image paketobuildpacks/run-jammy-base:latest"
+script = "cpln image build --name ${CARGO_MAKE_CRATE_NAME}:latest --push"
+dependencies = ["builder-musl"]
 
 [tasks.db-up]
 script = "docker run --name surrealdb --rm --pull always -p 8000:8000 surrealdb/surrealdb:latest start --user root --pass root"
