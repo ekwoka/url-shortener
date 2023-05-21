@@ -1,0 +1,9 @@
+application:
+  port: 8080
+  host: localhost
+database:
+  host: "127.0.0.1"
+  port: 8000
+  database_name: "test"
+  username: "root"
+  password: "root"

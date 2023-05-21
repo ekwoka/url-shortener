@@ -7,8 +7,8 @@ use warp::Filter;
 
 use crate::routes::{get_redirect, make_shortener};
 
+pub mod configuration;
 mod routes;
-
 pub type Db = Surreal<Client>;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -21,7 +21,7 @@ struct Record {
     id: Thing,
 }
 
-pub async fn run() -> surrealdb::Result<()> {
+pub async fn run(_config: configuration::Configuration) -> surrealdb::Result<()> {
     let db = Surreal::new::<Ws>("127.0.0.1:8000").await?;
 
     db.signin(Root {

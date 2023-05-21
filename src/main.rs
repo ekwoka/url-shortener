@@ -1,6 +1,7 @@
-use url_shortener::run;
+use url_shortener::{configuration, run};
 
 #[tokio::main]
 async fn main() -> Result<(), surrealdb::Error> {
-    run().await
+    let config = configuration::get_configuration().expect("config.yaml should be present");
+    run(config).await
 }
