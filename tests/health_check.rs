@@ -7,7 +7,8 @@ fn dummy() {
 
 #[tokio::test]
 async fn test_health_check() {
-    let config = configuration::get_configuration().expect("config.yaml should be present");
+    let mut config = configuration::get_configuration().expect("config.yaml should be present");
+    config.application.port = 0;
     let (addr, server) = url_shortener::run(config).await.expect("App should run");
     let _ = tokio::spawn(server);
     let client = reqwest::Client::new();

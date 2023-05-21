@@ -42,7 +42,7 @@ pub async fn run(
         .or(make_shortener(db.clone()))
         .or(get_redirect(db));
 
-    println!("Now Listening on port {}", &config.application.port);
     let server = warp::serve(shortener).bind_ephemeral(([0, 0, 0, 0], config.application.port));
+    println!("Now Listening on port {}", server.0);
     Ok(server)
 }
