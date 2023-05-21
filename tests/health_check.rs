@@ -1,4 +1,4 @@
-use url_shortener::configuration;
+use url_shortener::configuration::get_test_configuration;
 
 #[test]
 fn dummy() {
@@ -7,8 +7,7 @@ fn dummy() {
 
 #[tokio::test]
 async fn test_health_check() {
-    let mut config = configuration::get_configuration().expect("config.yaml should be present");
-    config.application.port = 0;
+    let config = get_test_configuration().expect("Config file is required");
     let (addr, server) = url_shortener::run(config).await.expect("App should run");
     let _ = tokio::spawn(server);
     let client = reqwest::Client::new();

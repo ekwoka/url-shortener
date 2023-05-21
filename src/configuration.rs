@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use uuid::Uuid;
 
 #[derive(Deserialize)]
 pub struct ApplicatonSettings {
@@ -26,6 +27,13 @@ pub fn get_configuration() -> Result<Configuration, config::ConfigError> {
         .add_source(config::File::new("config.yaml", config::FileFormat::Yaml))
         .build()?;
     settings.try_deserialize::<Configuration>()
+}
+
+pub fn get_test_configuration() -> Result<Configuration, config::ConfigError> {
+    let mut config = get_configuration()?;
+    config.application.port = 0;
+    config.database.database_name = Uuid::new_v4().to_string();
+    Ok(config)
 }
 
 impl DatabaseSettings {

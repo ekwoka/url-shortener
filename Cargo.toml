@@ -18,6 +18,7 @@ config = { version = "0.13.3", default-features = false, features = ["yaml", "ya
 serde = "1.0.163"
 surrealdb = { git = "https://github.com/surrealdb/surrealdb.git", tag = "v1.0.0-beta.9" }
 tokio = { version = "1.28.1", features = ["time", "macros", "tokio-macros"] }
+uuid = { version = "1.3.3", default-features = false }
 warp = { version ="0.3.5", default-features = false, features = ["tokio-rustls", "websocket"] }
 
 
@@ -35,4 +36,5 @@ incremental = true
 opt-level = 0
 
 [dev-dependencies]
+cargo-husky = { version = "1.5.0", default-features = false, features = ["precommit-hook", "run-cargo-test", "run-cargo-clippy", "run-cargo-fmt"] }
 reqwest = "0.11.18"
