@@ -5,3 +5,4 @@ tests/
 Dockerfile
 Makefile.toml
 !target/x86_64-unknown-linux-gnu/release/url_shortener
+!target/x86_64-unknown-linux-musl/release/url_shortener

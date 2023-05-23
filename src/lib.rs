@@ -1,15 +1,16 @@
+use std::net::SocketAddr;
+
 use serde::{Deserialize, Serialize};
-use surrealdb::engine::remote::ws::{Client, Ws};
-use surrealdb::opt::auth::Root;
 use surrealdb::sql::Thing;
 use surrealdb::Surreal;
-use warp::Filter;
+use warp::{Filter, Future};
 
-use crate::routes::{get_redirect, make_shortener};
+use crate::routes::{get_redirect, health_check, make_shortener};
 
+pub mod configuration;
 mod routes;
-
-pub type Db = Surreal<Client>;
+pub mod surreal;
+pub type Db = Surreal<surrealdb::engine::local::Db>;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Redirect {
@@ -21,20 +22,15 @@ struct Record {
     id: Thing,
 }
 
-pub async fn run() -> surrealdb::Result<()> {
-    let db = Surreal::new::<Ws>("127.0.0.1:8000").await?;
+pub async fn run(
+    config: configuration::Configuration,
+) -> surrealdb::Result<(SocketAddr, impl Future<Output = ()>)> {
+    let db = surreal::get_db(config.database).await?;
+    let shortener = health_check()
+        .or(make_shortener(db.clone()))
+        .or(get_redirect(db));
 
-    db.signin(Root {
-        username: "root",
-        password: "root",
-    })
-    .await?;
-
-    db.use_ns("test").use_db("test").await?;
-
-    let shortener = make_shortener(db.clone()).or(get_redirect(db));
-
-    println!("Listening on port 8080");
-    warp::serve(shortener).run(([0, 0, 0, 0], 8080)).await;
-    Ok(())
+    let server = warp::serve(shortener).bind_ephemeral(([0, 0, 0, 0], config.application.port));
+    println!("Now Listening on port {}", server.0);
+    Ok(server)
 }
