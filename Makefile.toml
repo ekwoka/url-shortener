@@ -30,7 +30,7 @@ script = "cpln image build --name ${CARGO_MAKE_CRATE_NAME}:${CARGO_MAKE_CRATE_VE
 dependencies = ["builder-musl"]
 
 [tasks.up]
-script = "docker run --name ${CARGO_MAKE_CRATE_NAME} -p 8080:8080 thekwoka.registry.cpln.io/${CARGO_MAKE_CRATE_NAME}:${CARGO_MAKE_CRATE_VERSION}-musl"
+script = "docker run --name ${CARGO_MAKE_CRATE_NAME} -p 8080:8080 thekwoka.registry.cpln.io/${CARGO_MAKE_CRATE_NAME}:${CARGO_MAKE_CRATE_VERSION}"
 dependencies = ["down","image"]
 
 [tasks.down]
