@@ -16,7 +16,7 @@ name = "url_shortener"
 [dependencies]
 config = { version = "0.13.3", default-features = false, features = ["yaml", "yaml-rust"] }
 serde = "1.0.163"
-surrealdb = { git = "https://github.com/surrealdb/surrealdb.git", tag = "v1.0.0-beta.9" }
+surrealdb = { git = "https://github.com/surrealdb/surrealdb.git", tag = "v1.0.0-beta.9", features = ["kv-mem"] }
 tokio = { version = "1.28.1", features = ["time", "macros", "tokio-macros"] }
 uuid = { version = "1.3.3", default-features = false }
 warp = { version ="0.3.5", default-features = false, features = ["tokio-rustls", "websocket"] }

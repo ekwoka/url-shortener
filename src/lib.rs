@@ -1,8 +1,8 @@
 use std::net::SocketAddr;
 
 use serde::{Deserialize, Serialize};
+use surrealdb::sql::Thing;
 use surrealdb::Surreal;
-use surrealdb::{engine::remote::ws::Client, sql::Thing};
 use warp::{Filter, Future};
 
 use crate::routes::{get_redirect, health_check, make_shortener};
@@ -10,7 +10,7 @@ use crate::routes::{get_redirect, health_check, make_shortener};
 pub mod configuration;
 mod routes;
 pub mod surreal;
-pub type Db = Surreal<Client>;
+pub type Db = Surreal<surrealdb::engine::local::Db>;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Redirect {

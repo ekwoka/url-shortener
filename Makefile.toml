@@ -1,24 +1,27 @@
 [tasks.dev]
-script = "cargo watch -x clippy -x fmt -x test"
+script = "cargo watch -x clippy -x fmt -x 'nextest run'"
 
 [tasks.dev-run]
-script = "cargo watch -x clippy -x fmt -x test -x run"
+script = "cargo watch -x clippy -x fmt -x 'nextest run' -x run"
 
 [tasks.fmt]
 script = "cargo fmt"
 
+[tasks.tester]
+script = "cargo nextest run"
+
 [tasks.builder]
-condition = { files_modified = { input = ["${CARGO_MAKE_WORKING_DIRECTORY}/Cargo.toml", "./src/**/*.rs"], output = ["./target/release/url_shortener"] } }
+condition = { files_modified = { input = ["./Cargo.*", "./src/**/*.rs"], output = ["./target/release/url_shortener"] } }
 script = "cargo build --release"
-dependencies = ["clippy", "fmt", "test"]
+dependencies = ["clippy", "fmt", "tester"]
 
 [tasks.builder-linux]
-condition = { files_modified = { input = ["${CARGO_MAKE_WORKING_DIRECTORY}/Cargo.toml", "./src/**/*.rs"], output = ["./target/x86_64-unknown-linux-gnu/release/url_shortener"] } }
+condition = { files_modified = { input = ["./Cargo.*", "./src/**/*.rs"], output = ["./target/x86_64-unknown-linux-gnu/release/url_shortener"] } }
 script = "TARGET_CC=x86_64-unknown-linux-gnu-gcc cargo build --release --target x86_64-unknown-linux-gnu"
 dependencies = ["builder"]
 
 [tasks.builder-musl]
-condition = { files_modified = { input = ["${CARGO_MAKE_WORKING_DIRECTORY}/Cargo.toml", "./src/**/*.rs"], output = ["./target/x86_64-unknown-linux-musl/release/url_shortener"] } }
+condition = { files_modified = { input = ["./Cargo.*", "./src/**/*.rs"], output = ["./target/x86_64-unknown-linux-musl/release/url_shortener"] } }
 script = "TARGET_CC=x86_64-linux-musl-gcc cargo build --release --target x86_64-unknown-linux-musl"
 dependencies = ["builder"]
 
