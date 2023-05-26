@@ -18,12 +18,12 @@ dependencies = ["clippy", "fmt", "tester"]
 [tasks.builder-linux]
 condition = { files_modified = { input = ["./Cargo.*", "./src/**/*.rs"], output = ["./target/x86_64-unknown-linux-gnu/release/url_shortener"] } }
 script = "TARGET_CC=x86_64-unknown-linux-gnu-gcc cargo build --release --target x86_64-unknown-linux-gnu"
-dependencies = ["builder"]
+dependencies = ["clippy", "fmt", "tester"]
 
 [tasks.builder-musl]
 condition = { files_modified = { input = ["./Cargo.*", "./src/**/*.rs"], output = ["./target/x86_64-unknown-linux-musl/release/url_shortener"] } }
 script = "TARGET_CC=x86_64-linux-musl-gcc cargo build --release --target x86_64-unknown-linux-musl"
-dependencies = ["builder"]
+dependencies = ["clippy", "fmt", "tester"]
 
 [tasks.image]
 script = "cpln image build --name ${CARGO_MAKE_CRATE_NAME}:${CARGO_MAKE_CRATE_VERSION}"
@@ -43,11 +43,11 @@ script = "docker start ${CARGO_MAKE_CRATE_NAME}"
 script = "docker stop ${CARGO_MAKE_CRATE_NAME}"
 
 [tasks.push]
-script = "cpln image build --name ${CARGO_MAKE_CRATE_NAME}:${CARGO_MAKE_CRATE_VERSION} --push"
+script = "cpln image build --name url-shortener:${CARGO_MAKE_CRATE_VERSION} --push"
 dependencies = ["builder-musl"]
 
 [tasks.deploy]
-script = "cpln image build --name ${CARGO_MAKE_CRATE_NAME}:latest --push"
+script = "cpln image build --name url-shortener:latest --push"
 dependencies = ["builder-musl"]
 
 [tasks.db-up]
@@ -57,4 +57,4 @@ script = "docker run --name surrealdb --rm --pull always -p 8000:8000 surrealdb/
 script = "docker rm -f surrealdb"
 
 [tasks.cpln-create]
-script = "cpln workload create --name url-shortener-preview --image //image/url-shortener:0.0.1 --port 8080 --public --gvc url-shorten --org thekwoka --type standard --cpu 2m --mem 10Mi"
+script = "cpln workload create --name url-shortener-preview --image //image/url-shortener:${CARGO_MAKE_CRATE_VERSION} --port 8080 --public --gvc url-shorten --org thekwoka --type serverless --cpu 2m --mem 10Mi --verbose"
