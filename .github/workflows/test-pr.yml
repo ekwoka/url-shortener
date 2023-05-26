@@ -26,8 +26,9 @@ jobs:
           override: true
           components: clippy
 
-      - run: echo '[registries.crates-io]
-protocol = "sparse"' >> ~/.cargo/config.toml
+      - run: |
+          echo '[registries.crates-io]' >> ~/.cargo/config.toml
+          echo 'protocol = "sparse"' >> ~/.cargo/config.toml
 
       - uses: Swatinem/rust-cache@v2
         name: Setup Cargo cache
