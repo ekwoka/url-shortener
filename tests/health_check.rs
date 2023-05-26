@@ -9,7 +9,7 @@ fn dummy() {
 async fn test_health_check() {
     let config = get_test_configuration().expect("Config file is required");
     let (addr, server) = url_shortener::run(config).await.expect("App should run");
-    let _ = tokio::spawn(server);
+    tokio::spawn(server);
     let client = reqwest::Client::new();
     let url = format!("http://{}/health_check", addr);
     let response = client
