@@ -4,7 +4,7 @@ use url_shortener::configuration::get_test_configuration;
 async fn test_url_redirection() {
     let config = get_test_configuration().expect("Config file is required");
     let (addr, server) = url_shortener::run(config).await.expect("App should run");
-    let _ = tokio::spawn(server);
+    tokio::spawn(server);
     let client = reqwest::Client::new();
     let url = format!("http://{}/create/https://thekwoka.net", addr);
     let response = client
