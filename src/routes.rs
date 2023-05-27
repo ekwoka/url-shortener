@@ -29,11 +29,12 @@ fn with_full() -> filters::BoxedFilter<(FullPath,)> {
 
 pub fn make_shortener(db: crate::Db) -> filters::BoxedFilter<(String,)> {
     async fn make_url(url: warp::path::FullPath, db: crate::Db) -> Result<String, Infallible> {
-        println!("url: {:?}", url);
+        let destination = url.as_str().replace("/create/", "");
+        tracing::info!("creating redirect to {}", destination);
         let created: surrealdb::Result<Record> = db
             .create("redirect")
             .content(Redirect {
-                url: url.as_str().replace("/create/", "").to_string(),
+                url: destination.to_string(),
             })
             .await;
         match created {

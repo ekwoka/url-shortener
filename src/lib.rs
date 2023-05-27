@@ -27,8 +27,8 @@ pub async fn run(
 ) -> surrealdb::Result<(SocketAddr, impl Future<Output = ()>)> {
     let db = surreal::get_db(config.database).await?;
     let shortener = health_check()
-        .or(make_shortener(db.clone()))
-        .or(get_redirect(db));
+        .or(make_shortener(db.clone()).with(warp::trace::named("create")))
+        .or(get_redirect(db).with(warp::trace::named("redirect")));
 
     let server = warp::serve(shortener).bind_ephemeral(([0, 0, 0, 0], config.application.port));
     println!("Now Listening on port {}", server.0);
