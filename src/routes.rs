@@ -54,16 +54,11 @@ pub fn get_redirect(db: crate::Db) -> filters::BoxedFilter<(Response<String>,)> 
         warp::any().map(move || db.clone()).boxed()
     }
     async fn get_url(id: String, db: crate::Db) -> Result<Response<String>, Infallible> {
-        /* let Ok(_id) = &id.parse::<i32>() else {
-            return Ok(Response::builder()
-                .status(200)
-                .body("Invalid URL - Needs to be Number".to_string()).unwrap());
-        }; */
         let id: Id = match Id::try_from(id) {
             Ok(id) => id,
             Err(e) => {
                 return Ok(Response::builder()
-                    .status(200)
+                    .status(400)
                     .body(format!("Error: {}", e))
                     .unwrap())
             }
@@ -72,8 +67,14 @@ pub fn get_redirect(db: crate::Db) -> filters::BoxedFilter<(Response<String>,)> 
 
         match redirect {
             Ok(redirect) => Ok(Response::builder().status(200).body(redirect.url).unwrap()),
+            Err(surrealdb::Error::Api(surrealdb::error::Api::FromValue { value: _, error: _ })) => {
+                Ok(Response::builder()
+                    .status(404)
+                    .body("Not Found".to_string())
+                    .unwrap())
+            }
             Err(e) => Ok(Response::builder()
-                .status(200)
+                .status(400)
                 .body(format!("Error: {}", e))
                 .unwrap()),
         }
