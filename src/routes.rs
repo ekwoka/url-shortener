@@ -29,11 +29,12 @@ fn with_full() -> filters::BoxedFilter<(FullPath,)> {
 
 pub fn make_shortener(db: crate::Db) -> filters::BoxedFilter<(String,)> {
     async fn make_url(url: warp::path::FullPath, db: crate::Db) -> Result<String, Infallible> {
-        println!("url: {:?}", url);
+        let destination = url.as_str().replace("/create/", "");
+        tracing::info!("creating redirect to {}", destination);
         let created: surrealdb::Result<Record> = db
             .create("redirect")
             .content(Redirect {
-                url: url.as_str().replace("/create/", "").to_string(),
+                url: destination.to_string(),
             })
             .await;
         match created {
@@ -54,15 +55,18 @@ pub fn get_redirect(db: crate::Db) -> filters::BoxedFilter<(Response<String>,)> 
         warp::any().map(move || db.clone()).boxed()
     }
     async fn get_url(id: String, db: crate::Db) -> Result<Response<String>, Infallible> {
+        tracing::info!("getting redirect for {}", id);
         let id: Id = match Id::try_from(id) {
             Ok(id) => id,
             Err(e) => {
+                tracing::error!("Error: {}", e);
                 return Ok(Response::builder()
                     .status(400)
                     .body(format!("Error: {}", e))
-                    .unwrap())
+                    .unwrap());
             }
         };
+        tracing::info!("getting  {:?}", id.0);
         let redirect: Result<Redirect, surrealdb::Error> = db.select(Into::<Thing>::into(id)).await;
 
         match redirect {
@@ -90,6 +94,7 @@ pub fn health_check() -> filters::BoxedFilter<(Response<String>,)> {
     warp::path!("health_check")
         .and(warp::get())
         .map(|| {
+            tracing::info!("Checking Health");
             Response::builder()
                 .status(200)
                 .body("OK".to_string())
