@@ -55,15 +55,18 @@ pub fn get_redirect(db: crate::Db) -> filters::BoxedFilter<(Response<String>,)> 
         warp::any().map(move || db.clone()).boxed()
     }
     async fn get_url(id: String, db: crate::Db) -> Result<Response<String>, Infallible> {
+        tracing::info!("getting redirect for {}", id);
         let id: Id = match Id::try_from(id) {
             Ok(id) => id,
             Err(e) => {
+                tracing::error!("Error: {}", e);
                 return Ok(Response::builder()
                     .status(400)
                     .body(format!("Error: {}", e))
-                    .unwrap())
+                    .unwrap());
             }
         };
+        tracing::info!("getting  {:?}", id.0);
         let redirect: Result<Redirect, surrealdb::Error> = db.select(Into::<Thing>::into(id)).await;
 
         match redirect {
@@ -91,6 +94,7 @@ pub fn health_check() -> filters::BoxedFilter<(Response<String>,)> {
     warp::path!("health_check")
         .and(warp::get())
         .map(|| {
+            tracing::info!("Checking Health");
             Response::builder()
                 .status(200)
                 .body("OK".to_string())
