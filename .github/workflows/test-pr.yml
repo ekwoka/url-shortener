@@ -33,10 +33,16 @@ jobs:
           cache-all-crates: true
 
       - name: Install nextest
-        run: cargo install cargo-nextest
+        run: cargo install cargo-nextest cargo-sweep
+
+      - name: Preclean cache
+        run: cargo sweep -ir
 
       - name: Clippy
         run: cargo clippy --all-targets -- -D warnings
 
       - name: Test
         run: cargo nextest run
+
+      - name: Clean Cache
+        run: cargo sweep -rt 7
