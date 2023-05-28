@@ -8,7 +8,7 @@ use warp::{Filter, Future};
 use crate::routes::{get_redirect, health_check, make_shortener};
 
 pub mod configuration;
-mod routes;
+pub mod routes;
 pub mod surreal;
 pub type Db = Surreal<surrealdb::engine::local::Db>;
 

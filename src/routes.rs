@@ -17,6 +17,36 @@ impl TryFrom<String> for Id {
     }
 }
 
+#[derive(Debug)]
+pub struct ValidURL(String);
+
+impl ValidURL {
+    pub fn parse(url: String) -> Result<Self, String> {
+        match validator::validate_url(&url) {
+            true => Ok(Self(url)),
+            false => Err("Invalid URL".into()),
+        }
+    }
+}
+
+impl AsRef<str> for ValidURL {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+
+impl AsRef<String> for ValidURL {
+    fn as_ref(&self) -> &String {
+        &self.0
+    }
+}
+
+impl From<ValidURL> for String {
+    fn from(val: ValidURL) -> Self {
+        val.0
+    }
+}
+
 impl From<Id> for Thing {
     fn from(val: Id) -> Self {
         val.0
@@ -27,19 +57,29 @@ fn with_full() -> filters::BoxedFilter<(FullPath,)> {
     warp::any().and(warp::path::full()).boxed()
 }
 
-pub fn make_shortener(db: crate::Db) -> filters::BoxedFilter<(String,)> {
-    async fn make_url(url: warp::path::FullPath, db: crate::Db) -> Result<String, Infallible> {
-        let destination = url.as_str().replace("/create/", "");
+pub fn make_shortener(db: crate::Db) -> filters::BoxedFilter<(Response<String>,)> {
+    async fn make_url(
+        path: warp::path::FullPath,
+        db: crate::Db,
+    ) -> Result<Response<String>, Infallible> {
+        let destination = path.as_str().replace("/create/", "");
         tracing::info!("creating redirect to {}", destination);
+        let Ok(url) = ValidURL::parse(destination) else {
+            return Ok(Response::builder().status(400).body("Error: Invalid URL Target".into()).unwrap())
+        };
         let created: surrealdb::Result<Record> = db
             .create("redirect")
-            .content(Redirect {
-                url: destination.to_string(),
-            })
+            .content(Redirect { url: url.into() })
             .await;
         match created {
-            Ok(redirect) => Ok(format!("visit http://localhost:8080/{}", redirect.id)),
-            Err(e) => Ok(format!("Error: {}", e)),
+            Ok(redirect) => Ok(Response::builder()
+                .status(200)
+                .body(format!("visit http://localhost:8080/{}", redirect.id))
+                .unwrap()),
+            Err(e) => Ok(Response::builder()
+                .status(400)
+                .body(format!("Error: {}", e))
+                .unwrap()),
         }
     }
 
