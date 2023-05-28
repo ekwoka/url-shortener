@@ -6,7 +6,7 @@ fn dummy() {
 }
 
 #[tokio::test]
-async fn test_health_check() {
+async fn health_check() {
     let config = get_test_configuration().expect("Config file is required");
     let (addr, server) = url_shortener::run(config).await.expect("App should run");
     tokio::spawn(server);
@@ -22,4 +22,14 @@ async fn test_health_check() {
         Ok(text) => assert_eq!(text, "OK"),
         Err(e) => panic!("Response should have text: {}", e),
     }
+}
+
+#[test]
+fn validates_url() {
+    assert!(url_shortener::routes::ValidURL::parse("https://thekwoka.net".into()).is_ok());
+}
+
+#[test]
+fn rejects_invalid_url() {
+    assert!(url_shortener::routes::ValidURL::parse("thekwoka.net".into()).is_err());
 }
