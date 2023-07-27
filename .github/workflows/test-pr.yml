@@ -32,8 +32,11 @@ jobs:
         with:
           cache-all-crates: true
 
-      - name: Install nextest
-        run: cargo install cargo-nextest cargo-sweep
+      - name: Install Binstall
+        run: curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+
+      - name: Binstall crates
+        run: cargo binstall -y cargo-nextest cargo-sweep
 
       - name: Preclean cache
         run: cargo sweep -ir
