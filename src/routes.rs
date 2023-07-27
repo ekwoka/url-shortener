@@ -67,15 +67,21 @@ pub fn make_shortener(db: crate::Db) -> filters::BoxedFilter<(Response<String>,)
         let Ok(url) = ValidURL::parse(destination) else {
             return Ok(Response::builder().status(400).body("Error: Invalid URL Target".into()).unwrap())
         };
-        let created: surrealdb::Result<Record> = db
+        let created: surrealdb::Result<Vec<Record>> = db
             .create("redirect")
             .content(Redirect { url: url.into() })
             .await;
         match created {
-            Ok(redirect) => Ok(Response::builder()
-                .status(200)
-                .body(format!("visit http://localhost:8080/{}", redirect.id))
-                .unwrap()),
+            Ok(redirect) => match redirect.first() {
+                Some(redirect) => Ok(Response::builder()
+                    .status(200)
+                    .body(format!("visit http://localhost:8080/{}", redirect.id))
+                    .unwrap()),
+                _ => Ok(Response::builder()
+                    .status(400)
+                    .body("Not Found".into())
+                    .unwrap()),
+            },
             Err(e) => Ok(Response::builder()
                 .status(400)
                 .body(format!("Error: {}", e))
@@ -107,10 +113,17 @@ pub fn get_redirect(db: crate::Db) -> filters::BoxedFilter<(Response<String>,)> 
             }
         };
         tracing::info!("getting  {:?}", id.0);
-        let redirect: Result<Redirect, surrealdb::Error> = db.select(Into::<Thing>::into(id)).await;
+        let redirect: Result<Option<Redirect>, surrealdb::Error> =
+            db.select(Into::<Thing>::into(id)).await;
 
         match redirect {
-            Ok(redirect) => Ok(Response::builder().status(200).body(redirect.url).unwrap()),
+            Ok(redirect) => match redirect {
+                Some(redirect) => Ok(Response::builder().status(200).body(redirect.url).unwrap()),
+                _ => Ok(Response::builder()
+                    .status(404)
+                    .body("Not Found".to_string())
+                    .unwrap()),
+            },
             Err(surrealdb::Error::Api(surrealdb::error::Api::FromValue { value: _, error: _ })) => {
                 Ok(Response::builder()
                     .status(404)
