@@ -65,7 +65,10 @@ pub fn make_shortener(db: crate::Db) -> filters::BoxedFilter<(Response<String>,)
         let destination = path.as_str().replace("/create/", "");
         tracing::info!("creating redirect to {}", destination);
         let Ok(url) = ValidURL::parse(destination) else {
-            return Ok(Response::builder().status(400).body("Error: Invalid URL Target".into()).unwrap())
+            return Ok(Response::builder()
+                .status(400)
+                .body("Error: Invalid URL Target".into())
+                .unwrap());
         };
         let created: surrealdb::Result<Vec<Record>> = db
             .create("redirect")
