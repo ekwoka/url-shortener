@@ -17,7 +17,7 @@ jobs:
 
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: install dependencies (ubuntu only)
         run: |
           sudo apt-get update
