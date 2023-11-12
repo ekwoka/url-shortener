@@ -1,0 +1,78 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/alpine
+{
+	"name": "Rust",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+"image": "mcr.microsoft.com/devcontainers/base:bookworm",
+	"features": {
+		"ghcr.io/devcontainers/features/common-utils:2": {
+    },
+		"ghcr.io/devcontainers/features/rust:1": {},
+    "ghcr.io/devcontainers/features/git:1": {},
+		"ghcr.io/lee-orr/rusty-dev-containers/cargo-binstall:0": {
+      "packages": "cargo-make cargo-nextest cargo-watch rust-script"
+    },
+		"ghcr.io/wxw-matt/devcontainer-features/command_runner:latest": {
+			"command1": "apt-get update; apt-get upgrade -y; apt-get install pkg-config -y"
+        }
+	},
+
+  "overrideFeatureInstallOrder": [
+    "ghcr.io/devcontainers/features/common-utils:2",
+    "ghcr.io/devcontainers/features/git:1",
+    "ghcr.io/devcontainers/features/rust:1",
+    "ghcr.io/wxw-matt/devcontainer-features/command_runner:latest",
+    "ghcr.io/lee-orr/rusty-dev-containers/cargo-binstall:0"
+  ],
+
+  "mounts": [
+	{
+		"source": "devcontainer-cargo-cache-${devcontainerId}",
+		"target": "/usr/local/cargo",
+		"type": "volume"
+	},
+  {
+		"source": "devcontainer-target-cache-${devcontainerId}",
+		"target": "/workspaces/url-shortener/target",
+		"type": "volume"
+	}
+	],
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "uname -a",
+
+	// Configure tool-specific properties.
+	"customizations": {
+		// Configure properties specific to VS Code.
+		"vscode": {
+			// Set *default* container specific settings.json values on container create.
+			"settings": {
+				"lldb.executable": "/usr/bin/lldb",
+				// VS Code don't watch files under ./target
+				"files.watcherExclude": {
+					"**/target/**": true
+				},
+				"rust-analyzer.checkOnSave.command": "clippy"
+			},
+
+			// Add the IDs of extensions you want installed when the container is created.
+			"extensions": [
+				"vadimcn.vscode-lldb",
+				"mutantdino.resourcemonitor",
+				"rust-lang.rust-analyzer",
+				"tamasfe.even-better-toml",
+				"serayuzgur.crates"
+			]
+		}
+	},
+
+  "updateContentCommand": "makers builder",
+  "postStartCommand": "makers dev",
+
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	"remoteUser": "root"
+}
