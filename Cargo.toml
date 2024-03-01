@@ -17,7 +17,7 @@ name = "url_shortener"
 config = { version = "0.14.0", default-features = false, features = ["yaml"] }
 serde = { default-features = false, version = "1.0.197" }
 surrealdb = { version = "1.2.0", features = ["kv-mem"], default-features = false }
-tokio = { version = "1.35.1", features = ["macros"], default-features = false }
+tokio = { version = "1.36.0", features = ["macros"], default-features = false }
 tracing = { default-features = false, version = "0.1.40" }
 tracing-subscriber = { version = "0.3.18", features = ["ansi", "env-filter"], default-features = false }
 uuid = { version = "1.7.0", default-features = false }
