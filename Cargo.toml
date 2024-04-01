@@ -20,7 +20,7 @@ surrealdb = { version = "1.2.0", features = ["kv-mem"], default-features = false
 tokio = { version = "1.37.0", features = ["macros"], default-features = false }
 tracing = { default-features = false, version = "0.1.40" }
 tracing-subscriber = { version = "0.3.18", features = ["ansi", "env-filter"], default-features = false }
-uuid = { version = "1.7.0", default-features = false }
+uuid = { version = "1.8.0", default-features = false }
 validator = "0.16.1"
 warp = { version ="0.3.6", default-features = false }
 
