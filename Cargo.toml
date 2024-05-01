@@ -15,7 +15,7 @@ name = "url_shortener"
 
 [dependencies]
 config = { version = "0.14.0", default-features = false, features = ["yaml"] }
-serde = { default-features = false, version = "1.0.197" }
+serde = { default-features = false, version = "1.0.199" }
 surrealdb = { version = "1.2.0", features = ["kv-mem"], default-features = false }
 tokio = { version = "1.37.0", features = ["macros"], default-features = false }
 tracing = { default-features = false, version = "0.1.40" }
